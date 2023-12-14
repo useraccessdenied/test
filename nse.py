@@ -73,12 +73,14 @@ try:
         .T.to_dict()
     )
 
+    nse_dict_close = {key : nse_dict[key]["CLOSE"] for key in nse_dict}
+
     missed = 0
 
     for k in lastknownstocks:
         if k.startswith("4.1"):
             if k in nse_dict:
-                lastknownstocks[k][20] = nse_dict[k]["PREVCLOSE"]
+                lastknownstocks[k][20] = nse_dict[k]["CLOSE"]
                 lastknownstocks[k][5] = nse_dict[k]["PER_CHANGE"]
                 lastknownstocks[k][2] = nse_dict[k]["LAST"]
             else:
@@ -91,6 +93,7 @@ try:
         lastknownstocks[k] = t
 
     r.hset("lastKnownStockValue", mapping=lastknownstocks)
+    r.hset("close", mapping=nse_dict_close)
 
     log.info("Script for NSE succeeded.")
 except Exception:

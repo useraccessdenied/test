@@ -59,7 +59,7 @@ try:
         inplace=True,
     )
 
-    fonse_token_mapper.loc[fonse_token_mapper["SYMBOL"] == "NIFTY", "SYMBOL"] = "NIFTY"
+    fonse_token_mapper.loc[fonse_token_mapper["SYMBOL"] == "NIFTY 50", "SYMBOL"] = "NIFTY"
     fonse_token_mapper.loc[fonse_token_mapper["SYMBOL"] == "NIFTY BANK", "SYMBOL"] = "BANKNIFTY"
     fonse_token_mapper.loc[fonse_token_mapper["SYMBOL"] == "NIFTY FINANCIAL", "SYMBOL"] = "FINNIFTY"
     fonse_token_mapper.loc[fonse_token_mapper["SYMBOL"] == "NIFTY MIDCAP", "SYMBOL"] = "MIDCPNIFTY"
@@ -87,6 +87,8 @@ try:
 
     fonse_dict = fonse2[["iTOKEN", "CLOSE"]].set_index("iTOKEN").T.to_dict()
 
+    fonse_dict_close = {key : fonse_dict[key]["CLOSE"] for key in fonse_dict}
+
     missed = 0
 
     for k in lastknownstocks:
@@ -111,6 +113,8 @@ try:
         lastknownstocks[k] = t
 
     r.hset("lastKnownStockValue", mapping=lastknownstocks)
+
+    r.hset("close", mapping=fonse_dict_close)
 
     log.info("Script for FONSE succeeded.")
 except Exception:

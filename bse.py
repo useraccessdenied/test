@@ -46,20 +46,22 @@ try:
     bse["LOW"] = pd.to_numeric(bse["LOW"])
     bse["PREVCLOSE"] = pd.to_numeric(bse["PREVCLOSE"])
     bse["LAST"] = pd.to_numeric(bse["LAST"])
-    bse["PER_CHANGE"] = ((bse["LAST"] - bse["PREVCLOSE"]) / bse["PREVCLOSE"]) * 100
+    bse["PER_CHANGE"] = ((bse["CLOSE"] - bse["PREVCLOSE"]) / bse["PREVCLOSE"]) * 100
     bse["PER_CHANGE"] = bse["PER_CHANGE"].round(2)
     bse_dict = (
-        bse[["TOKEN", "OPEN", "LAST", "HIGH", "LOW", "PREVCLOSE", "PER_CHANGE"]]
+        bse[["TOKEN", "OPEN", "LAST", "HIGH", "LOW", "CLOSE", "PREVCLOSE", "PER_CHANGE"]]
         .set_index("TOKEN")
         .T.to_dict()
     )
+
+    bse_dict_close = {key : bse_dict[key]["CLOSE"] for key in bse_dict}
 
     missed = []
 
     for k in lastknownstocks:
         if k.startswith("1.1"):
             if k in bse_dict:
-                lastknownstocks[k][20] = bse_dict[k]["PREVCLOSE"]
+                lastknownstocks[k][20] = bse_dict[k]["CLOSE"]
                 lastknownstocks[k][5] = bse_dict[k]["PER_CHANGE"]
                 lastknownstocks[k][1] = bse_dict[k]["OPEN"]
                 lastknownstocks[k][2] = bse_dict[k]["LAST"]
@@ -76,6 +78,7 @@ try:
         lastknownstocks[k] = t
 
     r.hset("lastKnownStockValue", mapping=lastknownstocks)
+    r.hset("close", mapping=bse_dict_close)
 
     log.info("Script for BSE succeeded.")
 except Exception:
